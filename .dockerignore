@@ -1,0 +1,34 @@
+# Git & IDE
+.git
+.gitignore
+.agents
+.gemini
+.vscode
+.idea
+
+# Dependencies & Build Artefacts
+node_modules
+.next
+dist
+build
+coverage
+
+# Environment Secrets (NEVER bake credentials into Docker images)
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+
+# Logs & Diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Documentation & Artifacts
+docs/
+scratch/
+tests/
+*.md
+!README.md

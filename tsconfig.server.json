@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/server.ts",
+    "src/tools/**/*",
+    "src/types.ts",
+    "src/utils/**/*",
+    "src/config/urls.config.ts"
+  ]
+}
