@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  html, body {
+    height: 100%;
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-slate-950;
+    width: 100%;
+  }
+}
+
+/* Touch scrolling & scrollbar styles */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Base custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Prominent visible scrollbars for scrollable tables & code blocks on mobile/desktop */
+.table-scrollbar::-webkit-scrollbar {
+  height: 7px;
+}
+.table-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 9999px;
+}
+.table-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.5);
+  border-radius: 9999px;
+}
+.table-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.8);
+}
+
+/* Keep documentation copy and inline code inside narrow mobile layouts. */
+.docs-content {
+  overflow-wrap: anywhere;
+}
+
+.docs-content pre {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Active chat input focus glow */
+#chat-input:focus {
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.35);
+}
+
+/* Dark mode autofill fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc !important;
+  -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Print optimizations: strictly hide dev controls, floating badges, and non-printable elements */
+@media print {
+  .no-print,
+  .print\:hidden,
+  [data-no-print],
+  [data-dev-toolbar],
+  #dev-toolbar,
+  .fixed.bottom-3.right-3 {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
+
