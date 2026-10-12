@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
+import { RAILWAY_GATEWAY_URL } from "@/src/config/urls.config";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,7 @@ export async function POST(req: NextRequest) {
     const backendUrl = (
       process.env.RAILWAY_GATEWAY_URL ||
       process.env.BACKEND_API_URL ||
+      RAILWAY_GATEWAY_URL ||
       ""
     )
       .trim()
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
           headers: {
             "Content-Type": "application/json",
             ...(backendSecret ? { "x-gateway-secret": backendSecret } : {}),
+            "x-gateway-timestamp": Date.now().toString(),
             "x-forwarded-for": req.headers.get("x-forwarded-for") || "",
           },
           body: JSON.stringify(body),

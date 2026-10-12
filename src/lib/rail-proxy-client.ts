@@ -5,6 +5,8 @@
  * Contains ZERO proprietary scrapers, scraper tokens, or private curls.
  */
 
+import { RAILWAY_GATEWAY_URL } from "@/src/config/urls.config";
+
 export interface RailGatewayResponse<T = any> {
   success: boolean;
   tool: string;
@@ -24,6 +26,7 @@ export async function invokeRailGateway<T = any>(
   const gatewayUrl = (
     process.env.RAILWAY_GATEWAY_URL ||
     process.env.BACKEND_API_URL ||
+    RAILWAY_GATEWAY_URL ||
     ""
   ).trim().replace(/\/+$/, "");
 
@@ -47,6 +50,7 @@ export async function invokeRailGateway<T = any>(
       headers: {
         "Content-Type": "application/json",
         ...(gatewaySecret ? { "x-gateway-secret": gatewaySecret } : {}),
+        "x-gateway-timestamp": Date.now().toString(),
       },
       body: JSON.stringify({ tool, args }),
     });
