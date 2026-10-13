@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": false,
   "license": "Apache-2.0",
-  "description": "ConfirmRoute AI — Indian Railways Travel Intelligence Platform & AWS Elastic Beanstalk Deployment",
+  "description": "ConfirmRoute AI \u2014 Indian Railways Travel Intelligence Platform & AWS Elastic Beanstalk Deployment",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -12,7 +12,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.js"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.138",
