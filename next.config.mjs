@@ -80,47 +80,36 @@ const nextConfig = {
       },
     ];
   },
-  async redirects() {
+  async rewrites() {
+    const backendUrl = (
+      process.env.RAILWAY_GATEWAY_URL ||
+      process.env.BACKEND_API_URL ||
+      "http://localhost:3000"
+    )
+      .trim()
+      .replace(/\/+$/, "");
+
     return [
       {
-        source: "/pricing",
-        destination: "/plan",
-        permanent: true,
+        source: "/api/auth/check-user-exists",
+        destination: `${backendUrl}/api/auth/check-user-exists`,
       },
       {
-        source: "/refund-policy",
-        destination: "/refund",
-        permanent: true,
+        source: "/api/auth/validate-email",
+        destination: `${backendUrl}/api/auth/validate-email`,
       },
       {
-        source: "/api-terms",
-        destination: "/developer-terms",
-        permanent: true,
+        source: "/api/auth/log-event",
+        destination: `${backendUrl}/api/auth/log-event`,
       },
+    ];
+  },
+  async redirects() {
+    return [
       {
         source: "/support",
         destination: "/contact",
         permanent: true,
-      },
-      {
-        source: "/admin/invoice",
-        destination: "/admin/invoices",
-        permanent: false,
-      },
-      {
-        source: "/admin/invoice/:path*",
-        destination: "/admin/invoices/:path*",
-        permanent: false,
-      },
-      {
-        source: "/admin/usages",
-        destination: "/admin/usage",
-        permanent: false,
-      },
-      {
-        source: "/admin/usages/:path*",
-        destination: "/admin/usage/:path*",
-        permanent: false,
       },
     ];
   },
