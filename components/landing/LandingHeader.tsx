@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Menu,
   X,
@@ -11,10 +12,13 @@ import {
   Radio,
   Bot,
   Cloud,
+  LogIn,
+  User,
 } from "lucide-react";
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, profile } = useAuth();
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -62,6 +66,27 @@ export function LandingHeader() {
 
         {/* Desktop CTA */}
         <div className="hidden sm:flex items-center gap-3">
+          {user ? (
+            <Link
+              href="/chat"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-200 hover:text-white border border-slate-800 bg-slate-900/60 hover:bg-slate-800 transition"
+              title={`Logged in as ${user.email}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="max-w-[120px] truncate">
+                {profile?.user?.displayName || user.email?.split("@")[0]}
+              </span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition"
+            >
+              <LogIn className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Log In</span>
+            </Link>
+          )}
+
           <Link
             href="/chat"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all duration-200 group"
@@ -97,7 +122,27 @@ export function LandingHeader() {
               </a>
             ))}
           </nav>
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            {user ? (
+              <Link
+                href="/chat"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium text-slate-200 border border-slate-800 bg-slate-900"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Logged in as {user.email?.split("@")[0]}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium text-slate-300 border border-slate-800 bg-slate-900 hover:bg-slate-800 transition"
+              >
+                <LogIn className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Log In / Sign Up</span>
+              </Link>
+            )}
+
             <Link
               href="/chat"
               onClick={() => setMobileMenuOpen(false)}
