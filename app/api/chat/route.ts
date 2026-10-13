@@ -1,16 +1,38 @@
 import { NextRequest } from "next/server";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { RAILWAY_GATEWAY_URL } from "@/src/config/urls.config";
+import { getAuthenticatedUser } from "@/src/lib/auth/serverAuth";
+import {
+  GUEST_DAILY_LIMIT,
+  LOGGED_IN_DAILY_LIMIT,
+  getIdentityKey,
+  getUsageCount,
+  incrementUsageCount,
+} from "@/src/lib/quota/showcaseQuota";
 
 export const runtime = "nodejs";
 
 /**
- * ConfirmRoute AI Chat Streaming Proxy
+ * ConfirmRoute AI Chat Streaming Proxy with Showcase Quota Enforcement
+ * Enforces:
+ * - Guest: 15 searches / day
+ * - Logged-in User: 50 searches / day
  * Routes chat prompts & tool calls to the private microservice backend.
  * Contains ZERO proprietary prompt templates, API provider keys, or token ledgers.
  */
 export async function POST(req: NextRequest) {
   try {
+    const isDevUnlimited = req.headers.get("x-dev-unlimited") === "true";
+    const user = await getAuthenticatedUser(req);
+    const identityKey = getIdentityKey(req, user?.id);
+    const limit = user ? LOGGED_IN_DAILY_LIMIT : GUEST_DAILY_LIMIT;
+    const used = getUsageCount(identityKey);
+
+    // 0. Enforce Daily Search Cap (unless developer explicitly enabled Dev Unlimited)
+    if (!isDevUnlimited && used >= limit) {
+      return createQuotaExhaustedStreamResponse(Boolean(user), limit);
+    }
+
     const backendUrl = (
       process.env.RAILWAY_GATEWAY_URL ||
       process.env.BACKEND_API_URL ||
@@ -28,6 +50,12 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
+    // Increment usage counter on successful request initiation
+    if (!isDevUnlimited) {
+      incrementUsageCount(identityKey);
+    }
+    const remaining = isDevUnlimited ? 999999 : Math.max(0, limit - used - 1);
+
     // 1. Live Streaming Proxy to Private Backend
     if (backendUrl) {
       try {
@@ -43,16 +71,24 @@ export async function POST(req: NextRequest) {
         });
 
         if (backendRes.ok && backendRes.body) {
+          const headers = new Headers({
+            "Content-Type":
+              backendRes.headers.get("Content-Type") ||
+              "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "X-Accel-Buffering": "no",
+          });
+
+          if (!isDevUnlimited) {
+            headers.set("x-quota-remaining", String(remaining));
+            headers.set("x-quota-limit", String(limit));
+            headers.set("x-quota-used", String(used + 1));
+          }
+
           return new Response(backendRes.body, {
             status: 200,
-            headers: {
-              "Content-Type":
-                backendRes.headers.get("Content-Type") ||
-                "text/event-stream; charset=utf-8",
-              "Cache-Control": "no-cache, no-transform",
-              Connection: "keep-alive",
-              "X-Accel-Buffering": "no",
-            },
+            headers,
           });
         }
 
@@ -63,7 +99,12 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. High-Fidelity Standalone Demo Fallback (Ensures reviewers always see interactive UI)
-    return createDemoStreamResponse(body);
+    const fallbackResponse = createDemoStreamResponse(body);
+    if (!isDevUnlimited) {
+      fallbackResponse.headers.set("x-quota-remaining", String(remaining));
+      fallbackResponse.headers.set("x-quota-limit", String(limit));
+    }
+    return fallbackResponse;
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("[chat-proxy] Error in proxy route:", errorMsg);
@@ -72,6 +113,31 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Quota Exhausted Response Stream
+ */
+function createQuotaExhaustedStreamResponse(isLoggedIn: boolean, limit: number) {
+  const message = isLoggedIn
+    ? `⚠️ **Daily Search Limit Reached (${limit}/${limit} searches used)**\n\nYour 50 daily searches have been completed for today. Your daily search quota will automatically reset tomorrow at **00:00 IST (midnight)**.`
+    : `⚠️ **Guest Daily Search Quota Reached (${limit}/${limit} searches used)**\n\nGuest travelers receive **15 searches per day**. **[Sign Up or Log In](/login)** to immediately unlock **50 searches per day**, or try again tomorrow at **00:00 IST**.`;
+
+  const stream = createUIMessageStream({
+    execute: ({ writer }) => {
+      writer.write({ type: "start" });
+      writer.write({ type: "text-start", id: "quota-exhausted-1" });
+      writer.write({ type: "text-delta", id: "quota-exhausted-1", delta: message });
+      writer.write({ type: "text-end", id: "quota-exhausted-1" });
+      writer.write({ type: "finish", finishReason: "stop" });
+    },
+  });
+
+  const response = createUIMessageStreamResponse({ stream });
+  response.headers.set("x-quota-exhausted", "true");
+  response.headers.set("x-quota-remaining", "0");
+  response.headers.set("x-quota-limit", String(limit));
+  return response;
 }
 
 /**
