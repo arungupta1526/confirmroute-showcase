@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Check, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
-import { TOTAL_MCP_TOOLS_COUNT } from "@/components/docs/tabs/api-reference/toolsData";
+import { TOTAL_MCP_TOOLS_COUNT } from "@/src/config/chat-limits";
 
 export function LandingPricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");

@@ -36,3 +36,5 @@ export interface SessionTurnStatus {
   isWarning: boolean;
   isCapped: boolean;
 }
+
+export const TOTAL_MCP_TOOLS_COUNT = 25;

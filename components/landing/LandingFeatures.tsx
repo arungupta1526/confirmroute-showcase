@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp, GitFork, Navigation, LayoutGrid, Calendar, Cpu } from "lucide-react";
-import { TOTAL_MCP_TOOLS_COUNT } from "@/components/docs/tabs/api-reference/toolsData";
+import { TOTAL_MCP_TOOLS_COUNT } from "@/src/config/chat-limits";
 
 const FEATURES = [
   {

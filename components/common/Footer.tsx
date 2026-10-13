@@ -6,12 +6,16 @@ import { BrandLogo } from "@/components/brand";
 import { ShieldAlert, Cloud, Sparkles, Mail, MapPin, ExternalLink } from "lucide-react";
 import { useBusinessProfile } from "@/src/hooks/useBusinessProfile";
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string;
+}
+
+export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
   const currentYear = new Date().getFullYear();
   const { profile } = useBusinessProfile();
 
   return (
-    <footer className="w-full bg-slate-950 text-slate-400 py-10 sm:py-14 border-t border-slate-800/80">
+    <footer className={`w-full bg-slate-950 text-slate-400 py-10 sm:py-14 border-t border-slate-800/80 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12 pb-10 border-b border-slate-800/80">
           {/* Brand & Architecture Overview */}
