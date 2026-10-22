@@ -10,6 +10,12 @@ import { ConnectingLastMileAddon } from "./connecting/ConnectingLastMileAddon";
 import { CLASS_FILTER_ORDER, LAYOVER_SLOTS, computeItineraryScore } from "./connecting/connectingClassHelper";
 import { useCurrentISTTime, isTodayJourney, parseDepartureMinutes } from "./trainTimeHelper";
 
+function isSeatConfirmed(a?: { status?: string; seats?: number }): boolean {
+  if (!a) return false;
+  const s = String(a.status || "").toUpperCase();
+  return s.includes("AVL") || s.includes("RAC") || s.includes("CURR_AVL") || (a.seats ?? 0) > 0;
+}
+
 interface Props {
   data: ConnectingTrainsResult;
 }
@@ -36,8 +42,9 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
     });
   }, [data?.connections, isToday, totalMinutes]);
 
-  // Two-Window architecture: Default to "all" (Mix / General / 80% travelers)
-  const [activeTier, setActiveTier] = useState<"all" | "confirmed">("all");
+  // Three-Window architecture: "all" (Next Trains) | "one-confirmed" (80% Users) | "confirmed" (Both Confirmed)
+  const [activeTier, setActiveTier] = useState<"all" | "one-confirmed" | "confirmed">("all");
+  const [selectedOrigin, setSelectedOrigin] = useState<string>("all");
   const [selectedHub, setSelectedHub] = useState<string>("all");
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [selectedLayoverSlot, setSelectedLayoverSlot] = useState<string>("all");
@@ -46,6 +53,19 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
     return liveConnections.filter(
       (c) => c.tier === "CONFIRMED_SEATS" || c.hasConfirmedSeats
     ).length;
+  }, [liveConnections]);
+
+  const oneConfirmedCount = useMemo(() => {
+    return liveConnections.filter((c) => {
+      if (c.tier === "CONFIRMED_SEATS" || c.tier === "MIX_OR_GENERAL" || c.hasConfirmedSeats) return true;
+      const leg1Conf = (c.leg1?.availability || []).some(
+        (a: any) => isSeatConfirmed(a)
+      );
+      const leg2Conf = (c.leg2?.availability || []).some(
+        (a: any) => isSeatConfirmed(a)
+      );
+      return leg1Conf || leg2Conf;
+    }).length;
   }, [liveConnections]);
 
   if (!data || !data.connections || data.connections.length === 0) {
@@ -95,8 +115,31 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
         (c) => c.tier === "CONFIRMED_SEATS" || c.hasConfirmedSeats
       );
     }
+    if (activeTier === "one-confirmed") {
+      return liveConnections.filter((c) => {
+        if (c.tier === "CONFIRMED_SEATS" || c.tier === "MIX_OR_GENERAL" || c.hasConfirmedSeats) return true;
+        const leg1Conf = (c.leg1?.availability || []).some(
+          (a: any) => isSeatConfirmed(a)
+        );
+        const leg2Conf = (c.leg2?.availability || []).some(
+          (a: any) => isSeatConfirmed(a)
+        );
+        return leg1Conf || leg2Conf;
+      });
+    }
     return liveConnections;
   }, [liveConnections, activeTier]);
+
+  const availableOrigins = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const conn of tierConnections) {
+      const code = conn.leg1?.fromStnCode;
+      if (code && !map.has(code)) {
+        map.set(code, conn.leg1?.fromStnName || code);
+      }
+    }
+    return Array.from(map.entries());
+  }, [tierConnections]);
 
   const availableHubs = useMemo(() => {
     const map = new Map<string, string>();
@@ -108,83 +151,198 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
     return Array.from(map.entries());
   }, [tierConnections]);
 
-  // 2. Filter by hub if active
+  // 2. Filter by origin terminal if active
+  const originFilteredConnections = useMemo(() => {
+    return selectedOrigin === "all"
+      ? tierConnections
+      : tierConnections.filter((c) => c.leg1?.fromStnCode === selectedOrigin);
+  }, [tierConnections, selectedOrigin]);
+
+  // 3. Filter by hub if active
   const hubFilteredConnections = useMemo(() => {
     return selectedHub === "all"
-      ? tierConnections
-      : tierConnections.filter((c) => c.hubStationCode === selectedHub);
-  }, [tierConnections, selectedHub]);
+      ? originFilteredConnections
+      : originFilteredConnections.filter((c) => c.hubStationCode === selectedHub);
+  }, [originFilteredConnections, selectedHub]);
 
-  // 3. Compute matching class counts
+  // 4. Compute matching class counts (strictly verified by tier: confirmed seats on both legs in Both Confirmed)
   const classCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const cls of CLASS_FILTER_ORDER) counts[cls] = 0;
     for (const conn of hubFilteredConnections) {
-      const leg1Classes = new Set((conn.leg1?.availability || []).map((a: any) => a.travelClass));
-      const leg2Classes = new Set((conn.leg2?.availability || []).map((a: any) => a.travelClass));
       for (const cls of CLASS_FILTER_ORDER) {
-        if (leg1Classes.has(cls) && leg2Classes.has(cls)) {
-          counts[cls] = (counts[cls] || 0) + 1;
+        if (activeTier === "confirmed") {
+          // In Both Confirmed: that specific class MUST have confirmed seats on BOTH legs!
+          const leg1Conf = (conn.leg1?.availability || []).some(
+            (a: any) => a.travelClass === cls && isSeatConfirmed(a)
+          );
+          const leg2Conf = (conn.leg2?.availability || []).some(
+            (a: any) => a.travelClass === cls && isSeatConfirmed(a)
+          );
+          if (leg1Conf && leg2Conf) {
+            counts[cls] = (counts[cls] || 0) + 1;
+          }
+        } else if (activeTier === "one-confirmed") {
+          // In 1-Leg Confirmed: that class must have confirmed seats on at least 1 leg!
+          const leg1Conf = (conn.leg1?.availability || []).some(
+            (a: any) => a.travelClass === cls && isSeatConfirmed(a)
+          );
+          const leg2Conf = (conn.leg2?.availability || []).some(
+            (a: any) => a.travelClass === cls && isSeatConfirmed(a)
+          );
+          if (leg1Conf || leg2Conf) {
+            counts[cls] = (counts[cls] || 0) + 1;
+          }
+        } else {
+          // In Next Trains: class must be available on both legs
+          const leg1Has = (conn.leg1?.availability || []).some((a: any) => a.travelClass === cls);
+          const leg2Has = (conn.leg2?.availability || []).some((a: any) => a.travelClass === cls);
+          if (leg1Has && leg2Has) {
+            counts[cls] = (counts[cls] || 0) + 1;
+          }
         }
       }
     }
     return counts;
-  }, [hubFilteredConnections]);
+  }, [hubFilteredConnections, activeTier]);
 
   const activeClassFilters = useMemo(() => {
     return CLASS_FILTER_ORDER.filter((cls) => (classCounts[cls] || 0) > 0);
   }, [classCounts]);
 
-  // 4. Compute layover slot counts
+  // 5. Compute layover slot counts
   const layoverCounts = useMemo(() => {
-    const counts: Record<string, number> = { "lt-4": 0, "4-8": 0, "8-12": 0 };
+    const counts: Record<string, number> = {
+      "same-train": 0,
+      "lt-2": 0,
+      "2-4": 0,
+      "4-8": 0,
+      "8-12": 0,
+    };
     for (const conn of hubFilteredConnections) {
+      if (conn.isSameTrain) counts["same-train"]++;
       const m = conn.layoverMinutes ?? 0;
-      if (m <= 240) counts["lt-4"]++;
-      if (m > 240 && m <= 480) counts["4-8"]++;
-      if (m > 480 && m <= 720) counts["8-12"]++;
+      if (!conn.isSameTrain && m <= 120) counts["lt-2"]++;
+      if (!conn.isSameTrain && m > 120 && m <= 240) counts["2-4"]++;
+      if (!conn.isSameTrain && m > 240 && m <= 480) counts["4-8"]++;
+      if (!conn.isSameTrain && m > 480 && m <= 720) counts["8-12"]++;
     }
     return counts;
   }, [hubFilteredConnections]);
 
-  // 5. Final filtered connections (sorted chronologically by Leg 1 departure time: Earliest First)
+  // 6. Final filtered connections with 3-tier persona sorting & Option A Station Priority
   const filteredConnections = useMemo(() => {
     const list = hubFilteredConnections.filter((conn) => {
       if (selectedLayoverSlot !== "all") {
-        const slot = LAYOVER_SLOTS.find((s) => s.id === selectedLayoverSlot);
-        if (slot) {
-          const m = conn.layoverMinutes ?? 0;
-          if (m < slot.minMinutes || m > slot.maxMinutes) return false;
+        if (selectedLayoverSlot === "same-train") {
+          if (!conn.isSameTrain) return false;
+        } else {
+          if (conn.isSameTrain) return false;
+          const slot = LAYOVER_SLOTS.find((s) => s.id === selectedLayoverSlot);
+          if (slot) {
+            const m = conn.layoverMinutes ?? 0;
+            if (m < slot.minMinutes || m > slot.maxMinutes) return false;
+          }
         }
       }
       if (selectedClass !== "all") {
-        const leg1Has = (conn.leg1?.availability || []).some((a: any) => a.travelClass === selectedClass);
-        const leg2Has = (conn.leg2?.availability || []).some((a: any) => a.travelClass === selectedClass);
-        if (!leg1Has || !leg2Has) return false;
+        if (activeTier === "confirmed") {
+          const leg1Conf = (conn.leg1?.availability || []).some(
+            (a: any) => a.travelClass === selectedClass && isSeatConfirmed(a)
+          );
+          const leg2Conf = (conn.leg2?.availability || []).some(
+            (a: any) => a.travelClass === selectedClass && isSeatConfirmed(a)
+          );
+          if (!leg1Conf || !leg2Conf) return false;
+        } else if (activeTier === "one-confirmed") {
+          const leg1Conf = (conn.leg1?.availability || []).some(
+            (a: any) => a.travelClass === selectedClass && isSeatConfirmed(a)
+          );
+          const leg2Conf = (conn.leg2?.availability || []).some(
+            (a: any) => a.travelClass === selectedClass && isSeatConfirmed(a)
+          );
+          if (!leg1Conf && !leg2Conf) return false;
+        } else {
+          const leg1Has = (conn.leg1?.availability || []).some((a: any) => a.travelClass === selectedClass);
+          const leg2Has = (conn.leg2?.availability || []).some((a: any) => a.travelClass === selectedClass);
+          if (!leg1Has || !leg2Has) return false;
+        }
       }
       return true;
     });
 
-    const minDistance = list.reduce(
-      (min, c) => (c.totalDistance && c.totalDistance < min ? c.totalDistance : min),
-      Infinity
-    );
-    const baselineDist = minDistance === Infinity ? 0 : minDistance;
-
     return [...list].sort((a, b) => {
-      if (activeTier === "all") {
-        if (a.tier === "CONFIRMED_SEATS" && b.tier !== "CONFIRMED_SEATS") return -1;
-        if (b.tier === "CONFIRMED_SEATS" && a.tier !== "CONFIRMED_SEATS") return 1;
+      const reqSrc = (data?.source || "").trim().toUpperCase();
+
+      // =========================================================================
+      // TAB 3: "confirmed" (Both Confirmed Seats)
+      // Users specifically want guaranteed confirmed berths with minimal layover & fast travel time.
+      // Same-train confirmed split journeys get top priority.
+      // =========================================================================
+      if (activeTier === "confirmed") {
+        const aSameConfirmed = a.isSameTrain && (a.tier === "CONFIRMED_SEATS" || a.hasConfirmedSeats);
+        const bSameConfirmed = b.isSameTrain && (b.tier === "CONFIRMED_SEATS" || b.hasConfirmedSeats);
+        if (aSameConfirmed && !bSameConfirmed) return -1;
+        if (bSameConfirmed && !aSameConfirmed) return 1;
+
+        if (a.isSameTrain && !b.isSameTrain) return -1;
+        if (b.isSameTrain && !a.isSameTrain) return 1;
+
+        // Station Priority (Option A): user's requested terminal first
+        const aIsExact = Boolean(reqSrc && a.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+        const bIsExact = Boolean(reqSrc && b.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+        if (aIsExact && !bIsExact) return -1;
+        if (bIsExact && !aIsExact) return 1;
+
+        if ((a.layoverMinutes ?? 0) !== (b.layoverMinutes ?? 0)) {
+          return (a.layoverMinutes ?? 0) - (b.layoverMinutes ?? 0);
+        }
+        return (a.totalDurationMinutes ?? 0) - (b.totalDurationMinutes ?? 0);
       }
 
-      // If one route saves >= 45 mins of effective travel time (less platform waiting,
-      // faster arrival at destination), it ranks higher! Even if farther hub has 100-150 km more distance.
-      const scoreA = computeItineraryScore(a, baselineDist);
-      const scoreB = computeItineraryScore(b, baselineDist);
-      if (Math.abs(scoreA - scoreB) > 45) {
-        return scoreA - scoreB;
+      // =========================================================================
+      // TAB 2: "one-confirmed" (1-Leg Confirmed - 80% General Public Users)
+      // Dynamic Leg 1 Distance Coverage Ratio (Highest first: Prayagraj 80% > Lucknow 62% > Kanpur 56%)
+      // =========================================================================
+      if (activeTier === "one-confirmed") {
+        const d1A = a.leg1?.distance || 0;
+        const totalA = a.totalDistance || (d1A + (a.leg2?.distance || 0));
+        const ratioA = totalA > 0 ? d1A / totalA : 0;
+
+        const d1B = b.leg1?.distance || 0;
+        const totalB = b.totalDistance || (d1B + (b.leg2?.distance || 0));
+        const ratioB = totalB > 0 ? d1B / totalB : 0;
+
+        // Group by coverage ratio (significant threshold: 5% difference)
+        if (Math.abs(ratioA - ratioB) >= 0.05) {
+          return ratioB - ratioA; // Higher coverage ratio first! E.g. PRYJ (80%) before CNB (56%)
+        }
+
+        // Within same coverage tier, Station Priority (Option A): requested station first
+        const aIsExact = Boolean(reqSrc && a.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+        const bIsExact = Boolean(reqSrc && b.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+        if (aIsExact && !bIsExact) return -1;
+        if (bIsExact && !aIsExact) return 1;
+
+        // Then shortest layover then duration
+        if ((a.layoverMinutes ?? 0) !== (b.layoverMinutes ?? 0)) {
+          return (a.layoverMinutes ?? 0) - (b.layoverMinutes ?? 0);
+        }
+        return (a.totalDurationMinutes ?? 0) - (b.totalDurationMinutes ?? 0);
       }
 
+      // =========================================================================
+      // TAB 1: "all" (Next Trains / Immediate Departure)
+      // Strictly Departure Time (Earliest First) + Option A Station Priority
+      // (NO forced isSameTrain override!)
+      // =========================================================================
+      // 1. Station Priority (Option A): User requested station (e.g. NDLS) first
+      const aIsExact = Boolean(reqSrc && a.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+      const bIsExact = Boolean(reqSrc && b.leg1?.fromStnCode?.toUpperCase() === reqSrc);
+      if (aIsExact && !bIsExact) return -1;
+      if (bIsExact && !aIsExact) return 1;
+
+      // 2. Strictly Departure Time (Earliest First: 04:20 ➔ 06:10 ➔ 07:30 ➔ ...)
       const depA = parseDepartureMinutes(a.leg1?.departureTime);
       const depB = parseDepartureMinutes(b.leg1?.departureTime);
       if (depA !== depB) {
@@ -192,7 +350,7 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
       }
       return (a.layoverMinutes ?? 0) - (b.layoverMinutes ?? 0);
     });
-  }, [hubFilteredConnections, selectedLayoverSlot, selectedClass, activeTier]);
+  }, [hubFilteredConnections, selectedOrigin, selectedLayoverSlot, selectedClass, activeTier, data?.source]);
 
   const handleToggleSave = async () => {
     if (isSaving || !data?.source || !data?.destination) return;
@@ -241,22 +399,23 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
         </div>
       </div>
 
-      {/* Two-Window Primary Architecture: 80% Unreserved/Mix vs Confirmed Only */}
-      <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-900/90 border border-slate-800 mx-1">
+      {/* Three-Window Architecture: Next Trains vs 1-Leg Confirmed (80% Users) vs Both Confirmed */}
+      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-900/90 border border-slate-800 mx-1">
         <button
           type="button"
           onClick={() => {
             setActiveTier("all");
             setSelectedHub("all");
+            setSelectedOrigin("all");
           }}
-          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+          className={`flex items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
             activeTier === "all"
               ? "bg-sky-600 text-white shadow-sm shadow-sky-900/50"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
           }`}
         >
-          <TrainFront className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">All Routes & Mix (80% Users)</span>
+          <Clock className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Next Trains</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-950/80 text-sky-200 shrink-0">
             {liveConnections.length}
           </span>
@@ -265,17 +424,38 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
         <button
           type="button"
           onClick={() => {
+            setActiveTier("one-confirmed");
+            setSelectedHub("all");
+            setSelectedOrigin("all");
+          }}
+          className={`flex items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+            activeTier === "one-confirmed"
+              ? "bg-amber-600 text-white shadow-sm shadow-amber-900/50"
+              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+          }`}
+        >
+          <TrainFront className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">1-Leg Confirmed (80%)</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-950/80 text-amber-200 shrink-0">
+            {oneConfirmedCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
             setActiveTier("confirmed");
             setSelectedHub("all");
+            setSelectedOrigin("all");
           }}
-          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+          className={`flex items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
             activeTier === "confirmed"
               ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/50"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Both Confirmed Seats</span>
+          <span className="truncate">Both Confirmed</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-950/80 text-emerald-200 shrink-0">
             {totalConfirmedCount}
           </span>
@@ -292,6 +472,43 @@ export const ConnectingTrainsCard = React.memo(function ConnectingTrainsCard({ d
           Book via IRCTC&apos;s <strong className="text-sky-100 font-semibold">&ldquo;Connecting Journey Booking&rdquo;</strong> to link both PNRs. If Leg 1 is delayed causing a missed connection, you get a 100% full refund on Leg 2!
         </span>
       </div>
+
+      {/* Boarding Station Filter Pills (Option A Priority) */}
+      {availableOrigins.length > 1 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs px-1 no-scrollbar scrollbar-none">
+          <span className="text-[11px] text-slate-400 font-medium shrink-0">Boarding:</span>
+          <button
+            type="button"
+            onClick={() => setSelectedOrigin("all")}
+            className={`px-2 py-0.5 rounded text-[11px] font-medium border transition cursor-pointer shrink-0 ${
+              selectedOrigin === "all"
+                ? "bg-sky-950 text-sky-300 border-sky-700 font-semibold"
+                : "bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200"
+            }`}
+          >
+            All Terminals ({tierConnections.length})
+          </button>
+          {availableOrigins.map(([code, name]) => {
+            const count = tierConnections.filter((c) => c.leg1?.fromStnCode === code).length;
+            const displayName = formatStationDisplay(code, name);
+            const isExact = Boolean(data?.source && code.toUpperCase() === data.source.toUpperCase());
+            return (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setSelectedOrigin(code)}
+                className={`px-2 py-0.5 rounded text-[11px] font-medium border transition cursor-pointer shrink-0 ${
+                  selectedOrigin === code
+                    ? "bg-sky-950 text-sky-300 border-sky-700 font-semibold"
+                    : "bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200"
+                }`}
+              >
+                {isExact ? `★ ${displayName}` : displayName} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Hub Filter Pills */}
       {availableHubs.length > 1 && (
