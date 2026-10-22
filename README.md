@@ -63,7 +63,7 @@ ConfirmRoute AI has been architected for resilience, low-latency streaming, and 
                           ▼                               ▼
             ┌───────────────────────────┐   ┌───────────────────────────┐
             │       Amazon Bedrock      │   │   Railway Microservice    │
-            │    (Claude 3.5 / Nova)    │   │      Intelligence API     │
+            │    (AI Gateway)    │   │      Intelligence API     │
             └───────────────────────────┘   └───────────────────────────┘
 ```
 
@@ -127,7 +127,7 @@ eb setenv \
   NODE_ENV=production \
   PORT=3000 \
   AWS_REGION=us-east-1 \
-  BEDROCK_MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0 \
+  AI_GATEWAY_MODEL=auto \
   NEXT_PUBLIC_SITE_URL=https://your-domain.elasticbeanstalk.com
 ```
 

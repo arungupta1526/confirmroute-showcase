@@ -14,7 +14,7 @@ interface UseChatQuotaManagerOptions {
 
 /**
  * Manages anonymous guest session IDs, terminal log toggles,
- * dev unlimited quota bypass, and automatic Gemini <-> Gemma model switches.
+ * dev unlimited quota bypass, and automatic Fast <-> Balanced model switches.
  */
 export function useChatQuotaManager({
   profile,
@@ -84,7 +84,7 @@ export function useChatQuotaManager({
     }, 50);
   };
 
-  // Auto-shift model between Gemini and Gemma based on quota availability
+  // Auto-shift model between Fast and Balanced models based on quota availability
   useEffect(() => {
     if (!profile) return;
     const hasQuota =

@@ -1,4 +1,4 @@
-export type CapabilityMode = "AUTO" | "FAST" | "BALANCED" | "DEEP" | "PRO" | string;
+export type CapabilityMode = "AUTO" | "FAST" | "BALANCED" | "ADVANCED" | string;
 
 export interface CapabilityModeOption {
   id: CapabilityMode;
@@ -50,29 +50,25 @@ export function normalizeToCapabilityMode(input?: string | null): CapabilityMode
   if (upper === "AUTO" || upper === "FAST" || upper === "BALANCED" || upper === "ADVANCED") {
     return upper as CapabilityMode;
   }
-  // Legacy model ID mapping for backward compatibility
   const lower = input.toLowerCase();
-  if (lower.includes("flash-lite") || lower.includes("gemma") || lower.includes("ling")) return "FAST";
-  if (lower.includes("reasoning") || lower.includes("sonnet") || lower.includes("grok") || lower.includes("claude")) return "ADVANCED";
+  if (lower.includes("fast") || lower.includes("lite") || lower.includes("quick")) return "FAST";
+  if (lower.includes("reasoning") || lower.includes("advanced") || lower.includes("deep")) return "ADVANCED";
   return "BALANCED";
 }
 
-// Backward compatibility interface for legacy code/tests
+// Backward compatibility interface for legacy components
 export interface ModelOption {
   id: string;
   name: string;
-  provider: "gemini" | "grok" | "openrouter" | "openrouter-free";
+  provider: "confirmroute" | "cloud" | string;
   providerGroup: string;
   isFree?: boolean;
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
-  { id: "AUTO", name: "✨ Auto (Smart Router)", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
-  { id: "FAST", name: "⚡ Fast (Quick Answers)", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
-  { id: "BALANCED", name: "⚖️ Balanced (Seats & PNR)", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
-  { id: "ADVANCED", name: "🧠 Advanced (Reasoning)", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: false },
-  // Legacy alias IDs
-  { id: "auto", name: "Auto", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
-  { id: "gemini-3.1-flash-lite", name: "Fast", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
-  { id: "gemini-3.8-flash", name: "Balanced", provider: "gemini", providerGroup: "ConfirmRoute AI", isFree: true },
+  { id: "AUTO", name: "✨ Auto (Smart Router)", provider: "confirmroute", providerGroup: "ConfirmRoute AI", isFree: true },
+  { id: "FAST", name: "⚡ Fast (Quick Answers)", provider: "confirmroute", providerGroup: "ConfirmRoute AI", isFree: true },
+  { id: "BALANCED", name: "⚖️ Balanced (Seats & PNR)", provider: "confirmroute", providerGroup: "ConfirmRoute AI", isFree: true },
+  { id: "ADVANCED", name: "🧠 Advanced (Reasoning)", provider: "confirmroute", providerGroup: "ConfirmRoute AI", isFree: false },
+  { id: "auto", name: "Auto", provider: "confirmroute", providerGroup: "ConfirmRoute AI", isFree: true },
 ];

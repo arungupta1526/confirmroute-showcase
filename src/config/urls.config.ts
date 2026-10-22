@@ -13,14 +13,8 @@ export const DEFAULT_SITE_URL = SITE_URL;
 export const RAILWAY_GATEWAY_URL = (
   process.env.RAILWAY_GATEWAY_URL ||
   process.env.BACKEND_API_URL ||
-  "http://localhost:3000"
+  "https://www.confirmroute.com"
 ).trim().replace(/\/+$/, "");
-
-// Upstream Railway Media & CDN Base URL
-export const MEDIA_BASE_URL = (
-  process.env.RAILJOURNAL_MEDIA_URL ||
-  "https://media.railjournal.in"
-).replace(/\/+$/, "");
 
 // Social & Sharing Endpoints
 export const WHATSAPP_SHARE_URL = "https://api.whatsapp.com/send";

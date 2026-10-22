@@ -372,8 +372,8 @@ export const MessageBubble = React.memo(function MessageBubble({
             {message.role === "assistant" && showDiagnostics && (
               <DeveloperDiagnosticsBadge
                 role={usageRole || "WORKHORSE"}
-                provider={usageAnnotation?.provider || "Gemini"}
-                modelId={usageAnnotation?.modelId || message.modelId || "gemini-3.8-flash"}
+                provider={usageAnnotation?.provider || "ConfirmRoute AI"}
+                modelId={usageAnnotation?.modelId || message.modelId || "auto"}
                 latencyMs={usageAnnotation?.latencyMs}
                 fallbackTriggered={Boolean(usageAnnotation?.fallbackTriggered)}
               />

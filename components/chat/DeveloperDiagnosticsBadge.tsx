@@ -13,8 +13,8 @@ interface DeveloperDiagnosticsBadgeProps {
 
 export const DeveloperDiagnosticsBadge: React.FC<DeveloperDiagnosticsBadgeProps> = ({
   role = "WORKHORSE",
-  provider = "Gemini",
-  modelId = "gemini-3.8-flash",
+  provider = "ConfirmRoute AI",
+  modelId = "auto",
   latencyMs,
   fallbackTriggered = false,
 }) => {
