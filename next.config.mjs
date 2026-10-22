@@ -22,18 +22,18 @@ const securityHeaders = [
   },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(self), geolocation=(), payment=(self \"https://api.razorpay.com\" \"https://checkout.razorpay.com\" \"https://api.cashfree.com\" \"https://sandbox.cashfree.com\" \"https://api.payu.in\" \"https://secure.payu.in\")",
+    value: "camera=(), microphone=(self), geolocation=()",
   },
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://sdk.cashfree.com https://jssdk.payu.in https://www.googletagmanager.com https://*.googletagmanager.com https://challenges.cloudflare.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https: wss: https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://api.cashfree.com https://sandbox.cashfree.com https://api.payu.in https://secure.payu.in https://openrouter.ai https://generativelanguage.googleapis.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://challenges.cloudflare.com",
-      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://sdk.cashfree.com https://secure.payu.in https://challenges.cloudflare.com",
+      "connect-src 'self' https: wss: https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://challenges.cloudflare.com",
+      "frame-src 'self' https://challenges.cloudflare.com",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
