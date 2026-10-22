@@ -31,21 +31,21 @@ export const VacantBerthTimeline = React.memo(function VacantBerthTimeline({
 
   return (
     <div className="rounded-lg bg-slate-900/80 border border-slate-800/90 p-2.5 space-y-2 text-xs">
-      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300 border-b border-slate-800/70 pb-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] font-semibold text-slate-300 border-b border-slate-800/70 pb-1.5">
         <div className="flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5 text-sky-400" />
           <span>IRCTC Charting Timeline & Booking Window</span>
         </div>
         {departureStatus?.hasDeparted ? (
-          <span className="text-[10px] text-rose-300 font-mono bg-rose-950/70 border border-rose-800/60 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] text-rose-300 font-mono bg-rose-950/70 border border-rose-800/60 px-1.5 py-0.5 rounded whitespace-nowrap">
             ⚠️ Train Passed
           </span>
         ) : isSecondChartFrozen ? (
-          <span className="text-[10px] text-amber-300 font-mono bg-amber-950/70 border border-amber-800/60 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] text-amber-300 font-mono bg-amber-950/70 border border-amber-800/60 px-1.5 py-0.5 rounded whitespace-nowrap">
             ⚡ Final Chart Frozen
           </span>
         ) : (
-          <span className="text-[10px] text-emerald-300 font-mono bg-emerald-950/70 border border-emerald-800/60 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] text-emerald-300 font-mono bg-emerald-950/70 border border-emerald-800/60 px-1.5 py-0.5 rounded whitespace-nowrap">
             🎟️ Current Booking Open
           </span>
         )}
@@ -76,12 +76,17 @@ export const VacantBerthTimeline = React.memo(function VacantBerthTimeline({
 
       {/* Charting Remote Hub Info */}
       {remoteStation && (
-        <div className="flex items-center gap-1.5 text-[10px] text-sky-300 bg-sky-950/40 border border-sky-900/40 rounded px-2 py-1">
-          <Building2 className="w-3 h-3 text-sky-400 shrink-0" />
-          <span className="font-semibold text-sky-200">Charting Hub:</span>
-          <span>{formatStationDisplay(remoteStation, remoteStationName)}</span>
+        <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-sky-300 bg-sky-950/40 border border-sky-900/40 rounded px-2 py-1 leading-normal">
+          <span className="inline-flex items-center gap-1 font-semibold text-sky-200 shrink-0">
+            <Building2 className="w-3 h-3 text-sky-400 shrink-0" />
+            <span>Charting Hub:</span>
+          </span>
+          <span className="font-medium text-sky-100">{formatStationDisplay(remoteStation, remoteStationName)}</span>
           {nextRemoteStation && nextRemoteStation !== remoteStation && (
-            <span className="text-slate-400">➔ Next Hub: {formatStationDisplay(nextRemoteStation, nextRemoteStationName)}</span>
+            <span className="text-slate-400 inline-flex items-center gap-1">
+              <span>➔ Next Hub:</span>
+              <span className="text-slate-300">{formatStationDisplay(nextRemoteStation, nextRemoteStationName)}</span>
+            </span>
           )}
         </div>
       )}

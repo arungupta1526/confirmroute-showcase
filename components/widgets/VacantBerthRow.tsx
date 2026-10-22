@@ -39,29 +39,29 @@ export const VacantBerthRow = React.memo(function VacantBerthRow({
   return (
     <div
       key={`${b.coachName}-${b.berthNumber}-${idx}`}
-      className="flex items-center justify-between p-2 rounded-lg bg-slate-900/70 border border-slate-800/80 text-xs hover:border-slate-700 transition-colors"
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/80 text-xs hover:border-slate-700 transition-colors"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <span
-          className={`font-bold px-2 py-0.5 rounded border text-[11px] ${colors.bg} ${colors.text} ${colors.border}`}
+          className={`font-bold px-2 py-0.5 rounded border text-[11px] shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
         >
           {b.coachName}
         </span>
-        <div>
-          <div className="font-semibold text-slate-200 flex items-center gap-1.5">
-            <span>Berth {b.berthNumber}</span>
+        <div className="min-w-0">
+          <div className="font-semibold text-slate-200 flex items-center gap-1.5 flex-wrap">
+            <span className="shrink-0">Berth {b.berthNumber}</span>
             {berthType.code && (
               <button
                 type="button"
                 onClick={() => onSelectBerthType(berthType.code)}
                 title={`Click to filter by ${berthType.label} (${berthType.code})`}
-                className={`text-[10px] px-1.5 py-0.5 rounded border transition-transform active:scale-95 ${badgeClass}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded border transition-transform active:scale-95 shrink-0 ${badgeClass}`}
               >
                 {berthType.code} · {berthType.label}
               </button>
             )}
             {b.cabinCoupeNo && (
-              <span className="text-purple-300 text-[10px] font-medium">
+              <span className="text-purple-300 text-[10px] font-medium shrink-0">
                 Coupe {b.cabinCoupeNo}
               </span>
             )}
@@ -69,12 +69,12 @@ export const VacantBerthRow = React.memo(function VacantBerthRow({
         </div>
       </div>
 
-      <div className="text-right">
-        <div className="text-[11px] font-medium text-slate-300">
+      <div className="sm:text-right text-[11px] min-w-0">
+        <div className="font-medium text-slate-300 break-words leading-tight">
           {formatStationDisplay(b.from, b.fromStationName)} → {formatStationDisplay(b.to, b.toStationName)}
         </div>
         <div
-          className={`text-[10px] font-medium ${
+          className={`text-[10px] font-medium mt-0.5 ${
             b.isAvailableAtBoarding
               ? "text-emerald-400"
               : b.isDownstream

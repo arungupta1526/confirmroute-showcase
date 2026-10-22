@@ -37,33 +37,47 @@ export const PantryAmenitiesCard = React.memo(function PantryAmenitiesCard({ dat
   return (
     <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3 shadow-md shadow-black/20">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div>
-          <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100">
-            <span>{data.trainNumber}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 pb-2.5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+            <span className="font-mono text-base font-bold text-white">#{data.trainNumber}</span>
             {data.trainName && (
               <>
                 <span className="text-slate-500">·</span>
-                <span className="truncate max-w-[200px] sm:max-w-[320px]">{data.trainName}</span>
+                <span className="truncate max-w-[170px] xs:max-w-[220px] sm:max-w-[320px] text-slate-200">{data.trainName}</span>
               </>
             )}
           </div>
           {(data.source || data.destination) && (
-            <div className="text-[11px] text-slate-400">
-              {formatStationDisplay(data.source)} → {formatStationDisplay(data.destination)}
-              {data.totalDuration && ` · ${data.totalDuration}`}
-              {data.totalDistance && ` · ${data.totalDistance} km`}
+            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+              <span className="inline-flex items-center gap-1 flex-wrap font-medium text-slate-300">
+                <span>{formatStationDisplay(data.source)}</span>
+                <span className="text-slate-500">→</span>
+                <span>{formatStationDisplay(data.destination)}</span>
+              </span>
+              {data.totalDuration && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span>{data.totalDuration}</span>
+                </>
+              )}
+              {data.totalDistance && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span>{data.totalDistance} km</span>
+                </>
+              )}
             </div>
           )}
         </div>
 
-        <div>
+        <div className="shrink-0">
           {data.hasPantry ? (
-            <span className="px-2.5 py-1 rounded-md bg-amber-950/60 border border-amber-800/60 text-amber-300 text-xs font-semibold flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-md bg-amber-950/60 border border-amber-800/60 text-amber-300 text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap">
               <Utensils className="w-3.5 h-3.5" /> Pantry Car Active
             </span>
           ) : (
-            <span className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 text-xs font-medium flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 text-xs font-medium inline-flex items-center gap-1.5 whitespace-nowrap">
               <XCircle className="w-3.5 h-3.5 text-slate-500" /> No Pantry Car
             </span>
           )}
