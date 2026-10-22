@@ -30,6 +30,21 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+
+function getSecureRandomToken(): string {
+  if (typeof crypto !== "undefined") {
+    if (typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto.getRandomValues === "function") {
+      const arr = new Uint32Array(2);
+      crypto.getRandomValues(arr);
+      return `${arr[0].toString(36)}${arr[1].toString(36)}`;
+    }
+  }
+  return `${Date.now()}`;
+}
+
 function setCookie(name: string, value: string) {
   if (typeof document === "undefined") return;
   const maxAge = 365 * 24 * 60 * 60; // 1 year
@@ -52,11 +67,7 @@ export function getOrCreateAnonymousSessionId(): string {
     }
 
     if (!anonId) {
-      const uuid =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      anonId = `anon_${uuid}`;
+      anonId = `anon_${getSecureRandomToken()}`;
       try {
         localStorage.setItem(ANON_STORAGE_KEY, anonId);
       } catch {}
@@ -93,11 +104,7 @@ export function getClientDeviceId(): string {
     }
 
     if (!did) {
-      const rawUuid =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-      did = `dev_${rawUuid}`;
+      did = `dev_${getSecureRandomToken()}`;
       localStorage.setItem(DEVICE_STORAGE_KEY, did);
     }
 

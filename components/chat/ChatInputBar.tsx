@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Send, Loader2, X, Mic, MicOff, Keyboard } from "lucide-react";
 import { useVoiceInput } from "@/src/hooks/useVoiceInput";
 import { SessionTurnWarning } from "./SessionTurnWarning";
 import { SessionLimitReachedCard } from "./SessionLimitReachedCard";
 import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
+import { isMobileDevice, safeFocusChatInput } from "@/src/utils/focusHelper";
 
 interface ReplyingToState {
   id: string;
@@ -45,6 +46,13 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   onNewChat = () => {},
 }) => {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileDevice()) {
+      setShouldAutoFocus(true);
+    }
+  }, []);
   const { isListening, isSupported, language, setLanguage, toggleListening, error: voiceError, clearError: clearVoiceError } = useVoiceInput({
     defaultLanguage: "en-IN",
     onTranscript: (transcript) => {
@@ -53,9 +61,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
         target: { value: transcript.trim() },
       } as React.ChangeEvent<HTMLTextAreaElement>;
       onInputChange(fakeEvent);
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      safeFocusChatInput(inputRef.current, true);
     },
   });
 
@@ -151,7 +157,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           <textarea
             ref={inputRef}
             id="chat-input"
-            autoFocus
+            autoFocus={shouldAutoFocus}
             rows={1}
             value={input}
             onChange={onInputChange}

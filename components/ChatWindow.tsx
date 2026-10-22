@@ -20,6 +20,7 @@ import { useChatSessionSync } from "@/src/hooks/useChatSessionSync";
 import { useChatScrollPinning } from "@/src/hooks/useChatScrollPinning";
 import { useChatMessaging } from "@/src/hooks/useChatMessaging";
 import { safePushState, safeReplaceState } from "@/src/utils/history";
+import { safeFocusChatInput } from "@/src/utils/focusHelper";
 
 interface ChatWindowProps {
   initialSessionId?: string;
@@ -158,7 +159,7 @@ export function ChatWindow({ initialSessionId: propSessionId }: ChatWindowProps 
 
   useEffect(() => {
     if (isInitialized) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 100);
+      const timer = setTimeout(() => safeFocusChatInput(inputRef.current), 100);
       return () => clearTimeout(timer);
     }
   }, [isInitialized]);
@@ -211,7 +212,7 @@ export function ChatWindow({ initialSessionId: propSessionId }: ChatWindowProps 
     setErrorMessage(null);
     setReplyingTo(null);
     isNearBottomRef.current = true;
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => safeFocusChatInput(inputRef.current), 50);
   };
 
   const onSelectSessionClick = (sessionId: string) => {
@@ -225,7 +226,7 @@ export function ChatWindow({ initialSessionId: propSessionId }: ChatWindowProps 
       safePushState(hasUserMsg ? `/c/${sessionId}` : "/chat");
       setTimeout(() => {
         scrollToBottom(true);
-        inputRef.current?.focus();
+        safeFocusChatInput(inputRef.current);
       }, 50);
     }
   };

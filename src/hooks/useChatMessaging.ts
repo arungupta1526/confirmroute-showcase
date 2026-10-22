@@ -8,6 +8,7 @@ import { getTomorrowDate } from "@/src/utils/dates";
 import { useSessionTurnLimits } from "@/src/hooks/useSessionTurnLimits";
 import { getClientDeviceId, getOrCreateAnonymousSessionId } from "@/src/lib/auth/deviceId";
 import { updateCachedProfileQuota } from "@/src/hooks/authProfileCache";
+import { safeFocusChatInput } from "@/src/utils/focusHelper";
 
 interface ReplyingToState {
   id: string;
@@ -176,7 +177,7 @@ export function useChatMessaging({
     },
     onFinish: () => {
       refreshProfile();
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => safeFocusChatInput(inputRef.current), 50);
     },
   });
 
@@ -211,7 +212,7 @@ export function useChatMessaging({
     setIsNearBottom(true);
     append({ role: "user", content: promptText, createdAt: new Date() });
     scrollToBottom(true);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => safeFocusChatInput(inputRef.current), 50);
   };
 
   useEffect(() => {
@@ -235,7 +236,7 @@ export function useChatMessaging({
         setIsNearBottom(true);
         append({ role: "user", content: trimmed, createdAt: new Date() });
         scrollToBottom(true);
-        setTimeout(() => inputRef.current?.focus(), 50);
+        setTimeout(() => safeFocusChatInput(inputRef.current), 50);
       }
     };
     window.addEventListener("confirmroute:send-prompt", handleCustomSend);
