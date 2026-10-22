@@ -26,7 +26,9 @@ export interface LayoverSlot {
 }
 
 export const LAYOVER_SLOTS: LayoverSlot[] = [
-  { id: "lt-4", label: "< 4 hrs", minMinutes: 0, maxMinutes: 240 },
+  { id: "same-train", label: "👑 Same Train", minMinutes: 0, maxMinutes: 45 },
+  { id: "lt-2", label: "⚡ < 2 hrs", minMinutes: 0, maxMinutes: 120 },
+  { id: "2-4", label: "✨ 2–4 hrs", minMinutes: 120, maxMinutes: 240 },
   { id: "4-8", label: "4–8 hrs", minMinutes: 240, maxMinutes: 480 },
   { id: "8-12", label: "8–12 hrs", minMinutes: 480, maxMinutes: 720 },
 ];
@@ -165,20 +167,36 @@ export function computeItineraryScore(
 
   let score = duration;
 
-  // Layover fatigue penalty:
-  // - 40m - 180m (3h): 0 penalty (comfortable, natural transfer)
-  // - 180m - 300m (3h - 5h): moderate penalty (+0.5 min per extra minute)
-  // - > 300m (> 5h): heavy penalty (+1.5 min per extra minute)
-  if (layover > 300) {
-    score += (layover - 300) * 1.5 + (300 - 180) * 0.5;
-  } else if (layover > 180) {
-    score += (layover - 180) * 0.5;
+  // Same train bonus: -60 minutes score advantage (zero platform transfer fatigue)
+  if (conn.isSameTrain) {
+    score -= 60;
+  } else {
+    // Layover fatigue penalty (only for 2 different trains):
+    // - 40m - 180m (3h): 0 penalty (comfortable, natural transfer)
+    // - 180m - 300m (3h - 5h): moderate penalty (+0.5 min per extra minute)
+    // - > 300m (> 5h): heavy penalty (+1.5 min per extra minute)
+    if (layover > 300) {
+      score += (layover - 300) * 1.5 + (300 - 180) * 0.5;
+    } else if (layover > 180) {
+      score += (layover - 180) * 0.5;
+    }
   }
 
   // Distance detour penalty: only +0.25 min per km extra.
   // This allows a faster route via a farther hub (+100-150 km) to win if it saves >= 45-60 mins of waiting!
   if (minDistance > 0 && dist > minDistance) {
     score += (dist - minDistance) * 0.25;
+  }
+
+  // Destination-Proximate Journey Coverage Bonus:
+  // If Leg 1 covers >= 70% of the corridor with confirmed seats, user gets a restful major journey!
+  const d1 = conn.leg1?.distance || 0;
+  const totalD = conn.totalDistance || (d1 + (conn.leg2?.distance || 0));
+  if (totalD > 0 && d1 > 0) {
+    const coverageRatio = d1 / totalD;
+    if (coverageRatio >= 0.70) {
+      score -= Math.round((coverageRatio - 0.70) * 150);
+    }
   }
 
   return score;

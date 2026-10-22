@@ -36,20 +36,21 @@ export const StationInfoCard = React.memo(function StationInfoCard({ data }: Pro
     );
   };
 
-  const photoToDisplay = (!imgError && info?.photoUrl) || info?.galleryPhotoUrl;
+  const photoToDisplay =
+    (!imgError && (info?.photoUrl || info?.galleryPhotoUrl || (code ? `/api/media/station/${code}.webp` : null))) || null;
 
   return (
     <div className="my-3 font-sans rounded-2xl border border-slate-800 bg-slate-950 p-4 space-y-3.5 shadow-lg shadow-black/25">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
-        <div className="flex items-start gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 rounded-xl bg-indigo-950/70 border border-indigo-800/50 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
             <Building2 className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-base text-slate-100">{name}</h3>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
                 {code}
               </span>
               {info?.hindiName && (
@@ -71,8 +72,8 @@ export const StationInfoCard = React.memo(function StationInfoCard({ data }: Pro
         </div>
 
         {info?.platforms !== undefined && (
-          <div className="text-right shrink-0">
-            <div className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">
+          <div className="text-right shrink-0 ml-auto">
+            <div className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg whitespace-nowrap">
               {info.platforms} Platforms
             </div>
           </div>

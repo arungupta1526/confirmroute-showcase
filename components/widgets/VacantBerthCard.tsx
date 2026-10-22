@@ -188,57 +188,43 @@ export const VacantBerthCard = React.memo(function VacantBerthCard({ data }: Pro
   };
 
   return (
-    <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3.5 shadow-md shadow-black/20 text-slate-100">
+    <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-3.5 sm:p-4 space-y-3.5 shadow-md shadow-black/20 text-slate-100">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-start gap-2.5 min-w-0 flex-1">
-          <div className="w-9 h-9 rounded-lg bg-emerald-950/70 border border-emerald-700/50 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-            <Armchair className="w-5 h-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-100 flex-wrap">
-              <span>{data.trainNumber}</span>
-              {data.trainName && (
-                <>
-                  <span className="text-slate-600">·</span>
-                  <span className="truncate max-w-[180px] sm:max-w-[280px] text-slate-200">
-                    {data.trainName}
-                  </span>
-                </>
-              )}
+      <div className="border-b border-slate-800 pb-3 space-y-2.5">
+        {/* Top Row: Train Number, Train Name & Right Action Buttons */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-950/70 border border-emerald-700/50 flex items-center justify-center text-emerald-400 shrink-0">
+              <Armchair className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            {(data.from || data.to) && (
-              <div className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                {formatStationDisplay(data.from || "")} → {formatStationDisplay(data.to || "")}
-                {(data as any).totalDuration && ` · ${(data as any).totalDuration}`}
-                {((data as any).totalDistance || (data as any).distance) && ` · ${(data as any).totalDistance || (data as any).distance} km`}
-                {data.boardingStation && data.boardingStation !== data.from && (
-                  <span className="ml-1 text-slate-400">
-                    · Boarding: <span className="text-slate-200 font-medium">{formatStationDisplay(data.boardingStation)}</span>
-                  </span>
-                )}
-                {data.remoteStation && (
-                  <span className="ml-1 text-sky-400 font-medium">
-                    · Hub: {formatStationDisplay(data.remoteStation, data.remoteStationName)}
-                  </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+                <span className="font-mono text-base font-bold text-white tracking-wide">#{data.trainNumber}</span>
+                {data.trainName && (
+                  <>
+                    <span className="text-slate-600">·</span>
+                    <span className="truncate max-w-[140px] xs:max-w-[200px] sm:max-w-[300px] text-slate-200">
+                      {data.trainName}
+                    </span>
+                  </>
                 )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Chart Status & Share Actions */}
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          {/* Chart Status & Share Actions */}
           <div className="flex items-center gap-1.5 shrink-0">
             {data.isChartPrepared ? (
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                Chart Prepared
+                <span className="hidden xs:inline">Chart Prepared</span>
+                <span className="xs:hidden">Prepared</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-950/60 border border-amber-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
                 <Clock className="w-3 h-3 text-amber-400 shrink-0" />
-                Chart Pending
+                <span className="hidden xs:inline">Chart Pending</span>
+                <span className="xs:hidden">Pending</span>
               </span>
             )}
             <button
@@ -258,19 +244,54 @@ export const VacantBerthCard = React.memo(function VacantBerthCard({ data }: Pro
               <Share2 className="w-3 h-3" />
             </button>
           </div>
+        </div>
+
+        {/* Second Row: Full-Width Route & Booking Discount / Status Pill */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-850/60">
+          {(data.from || data.to) && (
+            <div className="text-[11px] text-slate-300 flex items-center gap-1.5 flex-wrap min-w-0">
+              <span className="font-semibold text-slate-100 inline-flex items-center gap-1 flex-wrap">
+                <span>{formatStationDisplay(data.from || "")}</span>
+                <span className="text-slate-500 font-normal mx-0.5">→</span>
+                <span>{formatStationDisplay(data.to || "")}</span>
+              </span>
+              {(data as any).totalDuration && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-slate-400">{(data as any).totalDuration}</span>
+                </>
+              )}
+              {((data as any).totalDistance || (data as any).distance) && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-slate-400">{(data as any).totalDistance || (data as any).distance} km</span>
+                </>
+              )}
+              {data.boardingStation && data.boardingStation !== data.from && (
+                <span className="text-slate-400">
+                  · Boarding: <span className="text-slate-200 font-medium">{formatStationDisplay(data.boardingStation)}</span>
+                </span>
+              )}
+              {data.remoteStation && (
+                <span className="text-sky-400 font-medium">
+                  · Hub: {formatStationDisplay(data.remoteStation, data.remoteStationName)}
+                </span>
+              )}
+            </div>
+          )}
 
           {data.departureStatus?.hasDeparted ? (
-            <span className="text-[10px] text-rose-300 font-medium bg-rose-950/40 border border-rose-800/40 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
+            <span className="text-[10px] text-rose-300 font-medium bg-rose-950/40 border border-rose-800/40 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
               Online Closed · Train Passed
             </span>
           ) : isSecondChartFrozen ? (
-            <span className="text-[10px] text-amber-300 font-medium bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
+            <span className="text-[10px] text-amber-300 font-medium bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
               TTE Spot Allotment · 2nd Chart Frozen
             </span>
           ) : data.isChartPrepared ? (
-            <span className="text-[10px] text-emerald-300 font-medium bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
+            <span className="text-[10px] text-emerald-300 font-medium bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0">
               <Sparkles className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
               10% Off Base Fare · Zero Tatkal Extra
             </span>

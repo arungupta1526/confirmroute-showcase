@@ -60,17 +60,20 @@ export const FastestTrainCard = React.memo(function FastestTrainCard({ data }: P
   return (
     <div className="my-3 font-sans rounded-2xl border border-amber-500/30 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-5 space-y-4 shadow-2xl shadow-black/40 text-slate-100">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner shrink-0">
-            <Zap className="w-5 h-5 fill-amber-400" />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner shrink-0">
+            <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-base text-slate-100">
-                Speed Champion: {formatStationDisplay(source)} → {formatStationDisplay(destination)}
+              <h3 className="font-bold text-sm sm:text-base text-slate-100 inline-flex items-center gap-1 flex-wrap">
+                <span>Speed Champion:</span>
+                <span>{formatStationDisplay(source)}</span>
+                <span className="text-slate-500">→</span>
+                <span>{formatStationDisplay(destination)}</span>
               </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300 shrink-0 whitespace-nowrap">
                 Fastest Journey
               </span>
             </div>

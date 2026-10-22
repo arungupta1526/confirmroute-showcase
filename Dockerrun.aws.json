@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "arungupta1526/confirmroute:latest",
+    "Name": "arungupta1526/confirmroute-showcase:latest",
     "Update": "true"
   },
   "Ports": [

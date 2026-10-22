@@ -33,9 +33,26 @@ export const ConnectingRouteItem = React.memo(function ConnectingRouteItem({
   copiedIdx,
   setCopiedIdx,
 }: Props) {
+  const hasLeg1Confirmed = conn.leg1?.availability?.some(
+    (a: any) =>
+      String(a.status || "").toUpperCase().includes("AVL") ||
+      String(a.status || "").toUpperCase().includes("RAC") ||
+      (a.seats ?? 0) > 0
+  );
+  const hasLeg2Confirmed = conn.leg2?.availability?.some(
+    (a: any) =>
+      String(a.status || "").toUpperCase().includes("AVL") ||
+      String(a.status || "").toUpperCase().includes("RAC") ||
+      (a.seats ?? 0) > 0
+  );
+
   const isBothConfirmed =
-    conn.leg1?.availability?.some((a: any) => String(a.status || "").toUpperCase().includes("AVL") || (a.seats ?? 0) > 0) &&
-    conn.leg2?.availability?.some((a: any) => String(a.status || "").toUpperCase().includes("AVL") || (a.seats ?? 0) > 0);
+    conn.tier === "CONFIRMED_SEATS" ||
+    conn.hasConfirmedSeats ||
+    (hasLeg1Confirmed && hasLeg2Confirmed);
+
+  const isMix = !isBothConfirmed && (conn.tier === "MIX_OR_GENERAL" || hasLeg1Confirmed || hasLeg2Confirmed);
+  const isWL = !isBothConfirmed && !isMix;
 
   const leg1Sorted = React.useMemo(
     () =>
@@ -59,6 +76,22 @@ export const ConnectingRouteItem = React.memo(function ConnectingRouteItem({
 
   return (
     <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-lg">
+      {/* Same-Train VIP Banner */}
+      {conn.isSameTrain && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 via-emerald-500/15 to-transparent border border-amber-500/40 text-amber-200 text-xs font-semibold shadow-sm">
+          <span className="text-sm">👑</span>
+          <span>Same Train Split Booking · Stay on board (No train change!)</span>
+        </div>
+      )}
+
+      {/* Cross-Station Warning Banner */}
+      {!conn.isSameTrain && conn.interchangeType === "CROSS_STATION" && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-950/50 border border-amber-600/50 text-amber-300 text-xs font-semibold shadow-sm">
+          <span className="text-sm">⚠️</span>
+          <span>Station Change: Arrive {conn.leg1?.toStnCode} ➔ Depart {conn.leg2?.fromStnCode} (City transfer required)</span>
+        </div>
+      )}
+
       {/* Layover Highlight Header */}
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 flex-wrap gap-2">
         <div className="flex items-center gap-2 flex-wrap">
@@ -81,16 +114,38 @@ export const ConnectingRouteItem = React.memo(function ConnectingRouteItem({
           )}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
+          {!conn.isSameTrain && conn.interchangeType === "SAME_STATION" && (
+            <span className="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/60 text-[10px] font-medium flex items-center gap-1">
+              ✨ Same Station
+            </span>
+          )}
+          {!conn.isSameTrain && conn.interchangeType === "CROSS_STATION" && (
+            <span className="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-700/80 text-[10px] font-semibold flex items-center gap-1">
+              ⚠️ Station Change
+            </span>
+          )}
           {isBothConfirmed ? (
             <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-700/80 text-[10px] font-semibold flex items-center gap-1">
               ✨ Both Confirmed
             </span>
-          ) : (
+          ) : isMix ? (
             <span className="px-2 py-0.5 rounded-full bg-sky-950/70 text-sky-300 border border-sky-800/60 text-[10px] font-medium flex items-center gap-1">
               🎫 Mix / General Ticket
             </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700/70 text-[10px] font-medium flex items-center gap-1">
+              ⏳ Waiting List Route
+            </span>
           )}
           {(() => {
+            if (conn.isSameTrain) {
+              return (
+                <span className="px-2.5 py-0.5 rounded-full border text-[11px] font-semibold flex items-center gap-1 bg-amber-950/80 text-amber-300 border-amber-700/80">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  {conn.haltMinutes ? `${conn.haltMinutes}m Halt` : conn.layoverFormatted}
+                </span>
+              );
+            }
             const layover = conn.layoverMinutes ?? 0;
             const isIdeal = layover >= 40 && layover <= 180;
             const isLong = layover > 300;
@@ -166,6 +221,26 @@ export const ConnectingRouteItem = React.memo(function ConnectingRouteItem({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Same-Train In-Transit Berth Switch Indicator */}
+      {conn.isSameTrain && (
+        <div className="flex items-center justify-center -my-1 py-1">
+          <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-medium flex items-center gap-1.5 shadow-sm">
+            <span>🔄</span>
+            <span>Stay inside train · Switch Berth at {formatStationDisplay(conn.hubStationCode, conn.hubStationName)} ({conn.haltMinutes || conn.layoverMinutes}m halt)</span>
+          </div>
+        </div>
+      )}
+
+      {/* Cross-Station City Transit Indicator */}
+      {!conn.isSameTrain && conn.interchangeType === "CROSS_STATION" && (
+        <div className="flex items-center justify-center -my-1 py-1">
+          <div className="px-3 py-1 rounded-full bg-amber-950/60 border border-amber-600/50 text-amber-300 text-[11px] font-semibold flex items-center gap-1.5 shadow-sm">
+            <span>🚕</span>
+            <span>Station Change: Arrive {conn.leg1?.toStnCode} ➔ Auto/Taxi to {conn.leg2?.fromStnCode} ({conn.layoverFormatted} buffer)</span>
+          </div>
         </div>
       )}
 

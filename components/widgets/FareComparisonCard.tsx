@@ -73,21 +73,35 @@ export const FareComparisonCard = React.memo(function FareComparisonCard({ data 
   return (
     <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3.5 shadow-md shadow-black/20">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div>
-          <div className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-            <IndianRupee className="w-4 h-4 text-emerald-400" />
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+        <div className="min-w-0">
+          <div className="font-bold text-sm text-slate-100 flex items-center gap-1.5 flex-wrap">
+            <IndianRupee className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Train Fare Comparison</span>
             {activeClass && (
-              <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">
+              <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold shrink-0">
                 Class: {activeClass}
               </span>
             )}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {formatStationDisplay(data.source || "")} → {formatStationDisplay(data.destination || "")}
-            {data.date && ` · ${data.date}`}
-            {routeDistance ? ` · ${routeDistance} km` : ""}
+          <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+            <span className="inline-flex items-center gap-1 flex-wrap font-medium text-slate-300">
+              <span>{formatStationDisplay(data.source || "")}</span>
+              <span className="text-slate-500">→</span>
+              <span>{formatStationDisplay(data.destination || "")}</span>
+            </span>
+            {data.date && (
+              <>
+                <span className="text-slate-600">·</span>
+                <span>{data.date}</span>
+              </>
+            )}
+            {routeDistance && (
+              <>
+                <span className="text-slate-600">·</span>
+                <span>{routeDistance} km</span>
+              </>
+            )}
           </div>
         </div>
       </div>

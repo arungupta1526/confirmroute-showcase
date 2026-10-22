@@ -44,6 +44,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate Git History for Gitleaks
+        if: github.event_name == 'push'
+        run: |
+          if [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            if ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+              echo "Before commit ${{ github.event.before }} is missing from history (rebase/squash detected). Overriding Gitleaks log opts."
+              echo "GITLEAKS_LOG_OPTS=--max-count=20" >> "$GITHUB_ENV"
+            fi
+          fi
+
       - name: Run Gitleaks Security Scan
         uses: gitleaks/gitleaks-action@v3
         env:

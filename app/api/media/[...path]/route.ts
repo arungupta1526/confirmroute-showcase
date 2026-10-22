@@ -35,10 +35,17 @@ export async function GET(
       return new NextResponse("Gateway backend not configured", { status: 503 });
     }
 
+    const clientUa = req.headers.get("user-agent");
+    const resolvedUserAgent =
+      clientUa && !clientUa.toLowerCase().includes("node-fetch")
+        ? clientUa
+        : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
     const targetUrl = `${backendUrl}/api/media/${subpath}${req.nextUrl.search}`;
 
     const res = await fetch(targetUrl, {
       headers: {
+        "User-Agent": resolvedUserAgent,
         Accept: "image/webp,image/avif,image/*,*/*;q=0.8",
       },
       next: { revalidate: 86400 },

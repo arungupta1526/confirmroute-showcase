@@ -278,8 +278,16 @@ export interface ConnectingTrainLeg {
 export interface ConnectingTrainOption {
   hubStationCode: string;
   hubStationName?: string;
-  tier?: "CONFIRMED_SEATS" | "MIX_OR_GENERAL";
+  tier?: "CONFIRMED_SEATS" | "MIX_OR_GENERAL" | "WAITING_LIST";
   hasConfirmedSeats?: boolean;
+  isSameTrain?: boolean;
+  haltMinutes?: number;
+  interchangeType?: "SAME_TRAIN" | "SAME_STATION" | "CROSS_STATION";
+  crossStationTransfer?: {
+    arrivalStation: string;
+    departureStation: string;
+    transferNote?: string;
+  };
   leg1: ConnectingTrainLeg;
   leg2: ConnectingTrainLeg;
   layoverMinutes: number;

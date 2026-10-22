@@ -27,16 +27,20 @@ export const TrainScheduleCard = React.memo(function TrainScheduleCard({ data }:
   return (
     <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3 shadow-md shadow-black/20">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-indigo-400">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 pb-2.5">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-indigo-400 shrink-0">
             <Route className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100">
-              <span>{data.trainNumber}</span>
-              <span className="text-slate-500">·</span>
-              <span className="truncate max-w-[200px] sm:max-w-[320px]">{data.trainName}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+              <span className="font-mono text-base font-bold text-white">#{data.trainNumber}</span>
+              {data.trainName && (
+                <>
+                  <span className="text-slate-500">·</span>
+                  <span className="truncate max-w-[170px] xs:max-w-[220px] sm:max-w-[320px] text-slate-200">{data.trainName}</span>
+                </>
+              )}
             </div>
             <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
               <span className="inline-flex items-center flex-wrap">
@@ -65,14 +69,14 @@ export const TrainScheduleCard = React.memo(function TrainScheduleCard({ data }:
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {data.hasPantry && (
-            <span className="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/40 text-amber-400 text-[10px] font-medium flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-800/40 text-amber-400 text-[10px] font-medium inline-flex items-center gap-1 whitespace-nowrap">
               <Utensils className="w-3 h-3" /> Pantry
             </span>
           )}
           {data.rating != null && !isNaN(Number(data.rating)) && (
-            <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-semibold flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-semibold inline-flex items-center gap-1 whitespace-nowrap">
               <Star className="w-3 h-3 fill-emerald-400" /> {Number(data.rating).toFixed(1)}
             </span>
           )}

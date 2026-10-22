@@ -140,6 +140,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
+            ${{ env.DOCKERHUB_USERNAME != '' && format('{0}/confirmroute-showcase', env.DOCKERHUB_USERNAME) || '' }}
             ${{ env.DOCKERHUB_USERNAME != '' && format('{0}/confirmroute', env.DOCKERHUB_USERNAME) || '' }}
             ghcr.io/${{ github.repository }}
           tags: |

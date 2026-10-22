@@ -55,8 +55,8 @@ export const StationStoppageCard = React.memo(function StationStoppageCard({ dat
   return (
     <div className="my-3 font-sans rounded-2xl border border-slate-800 bg-slate-950 p-4 space-y-3.5 shadow-xl shadow-black/30 text-slate-100">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800/80 pb-3">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div
             className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
               stopsHere
@@ -66,23 +66,25 @@ export const StationStoppageCard = React.memo(function StationStoppageCard({ dat
           >
             {stopsHere ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
           </div>
-          <div>
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-100">
-              <span className="font-mono text-sky-300">#{trainNumber}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+              <span className="font-mono text-base font-bold text-sky-300">#{trainNumber}</span>
               {trainName && (
                 <>
                   <span className="text-slate-600">·</span>
-                  <span className="truncate max-w-[200px] sm:max-w-[300px] text-slate-200">
+                  <span className="truncate max-w-[170px] xs:max-w-[220px] sm:max-w-[300px] text-slate-200">
                     {trainName}
                   </span>
                 </>
               )}
             </div>
             {(origin || destination) && (
-              <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                <Route className="w-3 h-3 text-slate-500" />
-                <span>
-                  {origin} → {destination}
+              <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <Route className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="inline-flex items-center gap-1 flex-wrap">
+                  <span>{origin}</span>
+                  <span className="text-slate-500">→</span>
+                  <span>{destination}</span>
                 </span>
               </div>
             )}
@@ -92,12 +94,12 @@ export const StationStoppageCard = React.memo(function StationStoppageCard({ dat
         {/* Halt Confirmation Badge */}
         <div className="text-right shrink-0">
           {stopsHere ? (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full whitespace-nowrap">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               Confirmed Halt
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-300 bg-rose-950/60 border border-rose-800/60 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-300 bg-rose-950/60 border border-rose-800/60 px-2.5 py-1 rounded-full whitespace-nowrap">
               <XCircle className="w-3.5 h-3.5 text-rose-400" />
               No Stoppage
             </span>

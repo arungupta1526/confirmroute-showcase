@@ -83,28 +83,42 @@ export const TrainRatingsCard = React.memo(function TrainRatingsCard({ data }: P
   return (
     <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-4 shadow-md shadow-black/20">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div>
-          <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100">
-            <span>#{data.trainNumber}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 pb-2.5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+            <span className="font-mono text-base font-bold text-white">#{data.trainNumber}</span>
             {data.trainName && (
               <>
                 <span className="text-slate-500">·</span>
-                <span className="truncate max-w-[200px] sm:max-w-[320px]">{data.trainName}</span>
+                <span className="truncate max-w-[170px] xs:max-w-[220px] sm:max-w-[320px] text-slate-200">{data.trainName}</span>
               </>
             )}
           </div>
           {(data.source || data.sourceCode || data.destination || data.destinationCode) && (
-            <div className="text-[11px] text-slate-400">
-              {formatStationDisplay(data.source || data.sourceCode, data.sourceName)} → {formatStationDisplay(data.destination || data.destinationCode, data.destinationName)}
-              {data.totalDuration && ` · ${data.totalDuration}`}
-              {data.totalDistance && ` · ${data.totalDistance} km`}
+            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+              <span className="inline-flex items-center gap-1 flex-wrap font-medium text-slate-300">
+                <span>{formatStationDisplay(data.source || data.sourceCode, data.sourceName)}</span>
+                <span className="text-slate-500">→</span>
+                <span>{formatStationDisplay(data.destination || data.destinationCode, data.destinationName)}</span>
+              </span>
+              {data.totalDuration && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span>{data.totalDuration}</span>
+                </>
+              )}
+              {data.totalDistance && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span>{data.totalDistance} km</span>
+                </>
+              )}
             </div>
           )}
         </div>
 
         {overall != null && (
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 font-bold text-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 font-bold text-sm shrink-0 whitespace-nowrap">
             <Star className="w-4 h-4 fill-emerald-400" />
             <span>{Number(overall).toFixed(1)}</span>
             {data.ratings?.baseline?.tier && (

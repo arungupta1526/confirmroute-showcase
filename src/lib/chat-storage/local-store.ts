@@ -257,8 +257,13 @@ export function createNewSession(
     return existingEmpty;
   }
 
+  const randSuffix =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID().slice(0, 8)
+      : `${Date.now()}`;
+
   const newSession: ChatSession = {
-    id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    id: `session_${Date.now()}_${randSuffix}`,
     title: "New Train Query",
     createdAt: Date.now(),
     updatedAt: Date.now(),

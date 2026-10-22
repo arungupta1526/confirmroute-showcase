@@ -92,11 +92,11 @@ export const TrainLeaderboardsCard = React.memo(function TrainLeaderboardsCard({
           return (
             <div
               key={idx}
-              className="px-3 py-2 rounded-lg bg-slate-900/50 border border-slate-800/80 flex items-center justify-between text-xs hover:border-slate-700 transition"
+              className="px-3 py-2 rounded-lg bg-slate-900/50 border border-slate-800/80 flex items-center justify-between gap-2 text-xs hover:border-slate-700 transition"
             >
-              <div className="flex items-center gap-2.5 truncate pr-2">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
                     idx === 0
                       ? "bg-amber-400 text-slate-950 shadow-sm"
                       : idx === 1
@@ -108,20 +108,20 @@ export const TrainLeaderboardsCard = React.memo(function TrainLeaderboardsCard({
                 >
                   {idx + 1}
                 </span>
-                <div className="truncate">
+                <div className="min-w-0 flex-1 truncate">
                   <div className="font-semibold text-slate-200 truncate flex items-center gap-1.5">
                     {trainNumber && (
-                      <span className="font-mono text-sky-400 text-[11px]">#{trainNumber}</span>
+                      <span className="font-mono text-sky-400 text-[11px] shrink-0">#{trainNumber}</span>
                     )}
-                    <span>{item.name}</span>
+                    <span className="truncate">{item.name}</span>
                   </div>
                   {trainNumbers && (
-                    <div className="text-[10px] text-slate-500 font-mono">{trainNumbers}</div>
+                    <div className="text-[10px] text-slate-500 font-mono truncate">{trainNumbers}</div>
                   )}
                 </div>
               </div>
 
-              <div className="text-right whitespace-nowrap flex items-center gap-2">
+              <div className="text-right whitespace-nowrap flex items-center gap-2 shrink-0">
                 {rating && (
                   <span className="flex items-center gap-0.5 text-[11px] text-emerald-400 font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40">
                     <Star className="w-3 h-3 fill-emerald-400" />

@@ -98,32 +98,46 @@ export const CoachPositionCard = React.memo(function CoachPositionCard({ data }:
   return (
     <div className="my-3 font-sans rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3 shadow-md shadow-black/20">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-sky-400">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 pb-2.5">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-sky-400 shrink-0">
             <TrainFront className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100">
-              <span>{data.trainNumber}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 font-bold text-sm text-slate-100 flex-wrap">
+              <span className="font-mono text-base font-bold text-white">#{data.trainNumber}</span>
               {data.trainName && (
                 <>
                   <span className="text-slate-500">·</span>
-                  <span className="truncate max-w-[200px] sm:max-w-[320px]">{data.trainName}</span>
+                  <span className="truncate max-w-[170px] xs:max-w-[220px] sm:max-w-[320px] text-slate-200">{data.trainName}</span>
                 </>
               )}
             </div>
             {(data.source || data.sourceCode || data.destination || data.destinationCode) && (
-              <div className="text-[11px] text-slate-400">
-                {formatStationDisplay(data.source || data.sourceCode, data.sourceName)} → {formatStationDisplay(data.destination || data.destinationCode, data.destinationName)}
-                {data.totalDuration && ` · ${data.totalDuration}`}
-                {data.totalDistance && ` · ${data.totalDistance} km`}
+              <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+                <span className="inline-flex items-center gap-1 flex-wrap font-medium text-slate-300">
+                  <span>{formatStationDisplay(data.source || data.sourceCode, data.sourceName)}</span>
+                  <span className="text-slate-500">→</span>
+                  <span>{formatStationDisplay(data.destination || data.destinationCode, data.destinationName)}</span>
+                </span>
+                {data.totalDuration && (
+                  <>
+                    <span className="text-slate-600">·</span>
+                    <span>{data.totalDuration}</span>
+                  </>
+                )}
+                {data.totalDistance && (
+                  <>
+                    <span className="text-slate-600">·</span>
+                    <span>{data.totalDistance} km</span>
+                  </>
+                )}
               </div>
             )}
           </div>
         </div>
-        <div className="text-right">
-          <span className="text-xs font-semibold text-slate-300 bg-slate-900 px-2.5 py-1 rounded-md border border-slate-800">
+        <div className="text-right shrink-0 ml-auto">
+          <span className="text-xs font-semibold text-slate-300 bg-slate-900 px-2.5 py-1 rounded-md border border-slate-800 whitespace-nowrap">
             {coaches.length} Coaches
           </span>
         </div>
